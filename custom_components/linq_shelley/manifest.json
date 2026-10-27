@@ -1,0 +1,14 @@
+{
+  "domain": "linq_shelley",
+  "name": "Shelley SD60 School Lunches",
+  "version": "1.4.0",
+  "documentation": "https://github.com/kraroed/shelley-sd60-school-lunches",
+  "issue_tracker": "https://github.com/kraroed/shelley-sd60-school-lunches/issues",
+  "codeowners": [
+    "@kraroed"
+  ],
+  "config_flow": true,
+  "iot_class": "cloud_polling",
+  "requirements": [],
+  "integration_type": "integration"
+}

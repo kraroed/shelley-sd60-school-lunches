@@ -1,0 +1,26 @@
+type: vertical-stack
+cards:
+  - type: markdown
+    content: |
+      # 🍎 Today's School Lunch
+      Shelley School District 60
+  - type: entities
+    title: Elementary Schools
+    show_header_toggle: false
+    entities:
+      - entity: sensor.dean_goodsell_elementary_lunch_today
+        name: Dean Goodsell Elementary
+      - entity: sensor.riverview_elementary_lunch_today
+        name: Riverview Elementary
+      - entity: sensor.stuart_elementary_lunch_today
+        name: Stuart Elementary
+      - entity: sensor.sunrise_elementary_lunch_today
+        name: Sunrise Elementary
+  - type: entities
+    title: Secondary Schools
+    show_header_toggle: false
+    entities:
+      - entity: sensor.hobbs_middle_school_lunch_today
+        name: Hobbs Middle School
+      - entity: sensor.shelley_high_school_lunch_today
+        name: Shelley High School

@@ -1,0 +1,17 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Shelley SD60 School Lunches",
+        "description": "Retrieve public LINQ Connect menus for all six Shelley schools.",
+        "data": {
+          "meal": "Meal",
+          "scan_interval": "Update interval (minutes)"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Shelley SD60 School Lunches is already configured."
+    }
+  }
+}
