@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.1 - 2026-10-26
+
+- Added browser-like request headers for LINQ Connect, which may block requests without them.
+- Improved API error reporting so HTTP blocks and unexpected/non-JSON responses are visible in Home Assistant logs.
+
 ## 1.4.0 - 2026-10-26
 
 - Renamed the project branding to **Shelley SD60 School Lunches**.
