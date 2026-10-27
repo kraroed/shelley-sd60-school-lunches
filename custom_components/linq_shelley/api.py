@@ -21,13 +21,44 @@ class LinqClient:
             "startDate": start.strftime("%-m-%-d-%Y"),
             "endDate": end.strftime("%-m-%-d-%Y"),
         }
+        # LINQ Connect's public API may reject requests that do not resemble a
+        # normal browser request. Use a browser-like User-Agent, as used by
+        # other working LINQ Connect clients.
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) "
+                "Gecko/20100101 Firefox/128.0"
+            ),
+            "Accept": "application/json, text/plain, */*",
+            "Referer": "https://linqconnect.com/",
+        }
         try:
-            async with self._session.get(API_URL, params=params, timeout=aiohttp.ClientTimeout(total=20)) as response:
+            async with self._session.get(
+                API_URL,
+                params=params,
+                headers=headers,
+                timeout=aiohttp.ClientTimeout(total=20),
+            ) as response:
                 if response.status >= 400:
-                    raise LinqError(f"LINQ returned HTTP {response.status}")
-                return await response.json(content_type=None)
+                    detail = (await response.text())[:250].replace("\n", " ")
+                    raise LinqError(
+                        f"LINQ returned HTTP {response.status}; response: {detail or '(empty)'}"
+                    )
+                try:
+                    payload = await response.json(content_type=None)
+                except (ValueError, aiohttp.ContentTypeError) as err:
+                    detail = (await response.text())[:250]
+                    raise LinqError(
+                        f"LINQ returned a non-JSON response (possibly bot protection): {detail}"
+                    ) from err
+                if not isinstance(payload, dict) or "FamilyMenuSessions" not in payload:
+                    raise LinqError(
+                        "LINQ response did not contain FamilyMenuSessions; "
+                        "the API response format may have changed or the request was blocked"
+                    )
+                return payload
         except (aiohttp.ClientError, TimeoutError) as err:
-            raise LinqError(str(err)) from err
+            raise LinqError(f"Could not connect to LINQ Connect: {err}") from err
 
 
 def _recipe_names(category: dict[str, Any]) -> list[str]:
