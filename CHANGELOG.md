@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.5 - 2026-10-27
+
+- Expanded LINQ menu diagnostics to log nested object keys and list lengths even when group labels use unexpected field names.
+
 ## 1.4.4 - 2026-10-27
 
 - Added targeted debug logging for LINQ menu-group labels and object keys to help identify main, alternate, and shared menu sections without logging the full API payload.
