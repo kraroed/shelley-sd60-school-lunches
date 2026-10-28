@@ -1,12 +1,19 @@
 from __future__ import annotations
+
 from datetime import date, timedelta
+import logging
 from typing import Any
+
 import aiohttp
 
 from .const import API_URL
 
+_LOGGER = logging.getLogger(__name__)
+
+
 class LinqError(Exception):
     pass
+
 
 class LinqClient:
     def __init__(self, session: aiohttp.ClientSession, building_id: str, district_id: str) -> None:
@@ -21,9 +28,6 @@ class LinqClient:
             "startDate": start.strftime("%-m-%-d-%Y"),
             "endDate": end.strftime("%-m-%-d-%Y"),
         }
-        # LINQ Connect's public API may reject requests that do not resemble a
-        # normal browser request. Use a browser-like User-Agent, as used by
-        # other working LINQ Connect clients.
         headers = {
             "User-Agent": (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) "
@@ -61,24 +65,113 @@ class LinqClient:
             raise LinqError(f"Could not connect to LINQ Connect: {err}") from err
 
 
+def _normalize_date(value: Any) -> str | None:
+    """Convert the date formats returned by LINQ to YYYY-MM-DD."""
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+
+    # ISO date/datetime, including values with a trailing Z or timezone.
+    iso_candidate = text.replace("Z", "+00:00")
+    try:
+        return date.fromisoformat(iso_candidate[:10]).isoformat()
+    except ValueError:
+        pass
+
+    # Common LINQ display/API formats.
+    for fmt in ("%m/%d/%Y", "%m-%d-%Y", "%m/%d/%y", "%m-%d-%y"):
+        try:
+            return date.strptime(text, fmt).isoformat()
+        except ValueError:
+            continue
+
+    return None
+
+
 def _recipe_names(category: dict[str, Any]) -> list[str]:
-    return [str(r.get("RecipeName", "")).strip() for r in category.get("Recipes", []) if r.get("RecipeName")]
+    return [
+        str(recipe.get("RecipeName", "")).strip()
+        for recipe in category.get("Recipes", [])
+        if recipe.get("RecipeName")
+    ]
+
+
+def _collect_recipe_names(value: Any) -> list[str]:
+    """Recursively collect recipe names from a LINQ menu object."""
+    names: list[str] = []
+    if isinstance(value, dict):
+        if value.get("RecipeName"):
+            names.append(str(value["RecipeName"]).strip())
+        for child in value.values():
+            names.extend(_collect_recipe_names(child))
+    elif isinstance(value, list):
+        for child in value:
+            names.extend(_collect_recipe_names(child))
+    return names
+
+
+def _session_name(session: dict[str, Any]) -> str:
+    """Return the most likely serving-session name from a LINQ object."""
+    for key in ("ServingSession", "SessionName", "MealName", "Name"):
+        value = session.get(key)
+        if value:
+            return str(value).strip()
+    return ""
+
+
+def _iter_days(value: Any):
+    """Yield menu-day objects recursively, wherever LINQ nests them."""
+    if isinstance(value, dict):
+        if "Date" in value and any(
+            key in value for key in ("MenuMeals", "RecipeCategories", "Recipes", "Meals")
+        ):
+            yield value
+        for child in value.values():
+            yield from _iter_days(child)
+    elif isinstance(value, list):
+        for child in value:
+            yield from _iter_days(child)
 
 
 def parse_menu(payload: dict[str, Any], meal_name: str) -> dict[str, list[str]]:
+    """Parse LINQ FamilyMenuSessions into {YYYY-MM-DD: [menu items]}.
+
+    LINQ has returned slightly different nesting/field names over time.  We
+    therefore locate menu days recursively and collect RecipeName values below
+    each day rather than depending on one exact nesting structure.
+    """
     result: dict[str, list[str]] = {}
-    for session in payload.get("FamilyMenuSessions", []):
-        if str(session.get("ServingSession", "")).lower() != meal_name.lower():
+    sessions = payload.get("FamilyMenuSessions", [])
+    matched_sessions = 0
+
+    for session in sessions:
+        if not isinstance(session, dict):
             continue
-        for plan in session.get("MenuPlans", []):
-            for day in plan.get("Days", []):
-                day_date = str(day.get("Date", ""))[:10]
-                if not day_date:
-                    continue
-                items: list[str] = []
-                for meal in day.get("MenuMeals", []):
-                    for category in meal.get("RecipeCategories", []):
-                        items.extend(_recipe_names(category))
-                # Preserve API order while removing duplicates.
-                result[day_date] = list(dict.fromkeys(items))
+
+        name = _session_name(session)
+        if name and name.lower() != meal_name.lower():
+            continue
+        matched_sessions += 1
+
+        for day in _iter_days(session):
+            day_date = _normalize_date(day.get("Date"))
+            if not day_date:
+                continue
+
+            items = _collect_recipe_names(day)
+            # Preserve API order while removing duplicates and empty strings.
+            result[day_date] = list(dict.fromkeys(item for item in items if item))
+
+    _LOGGER.debug(
+        "Parsed LINQ %s menu: %d sessions matched, %d days with menu data",
+        meal_name,
+        matched_sessions,
+        len(result),
+    )
+    if not result:
+        session_names = [_session_name(s) for s in sessions if isinstance(s, dict)]
+        _LOGGER.debug("LINQ serving sessions returned: %s", session_names)
+
     return result
