@@ -127,14 +127,14 @@ def _iter_days(value: Any):
 
 
 def _log_menu_structure(value: Any, path: str = "root", depth: int = 0) -> None:
-    """Log menu-group labels and object keys to help diagnose LINQ menu layouts."""
-    if depth > 8:
+    """Log nested LINQ menu keys and group labels for diagnosing menu layouts."""
+    if depth > 12:
         return
 
     label_keys = {
         "Name", "MenuName", "MenuType", "MenuTitle", "CategoryName",
         "RecipeCategoryName", "ServingSession", "SessionName", "MealName",
-        "GroupName", "Label", "Title", "Description",
+        "GroupName", "Label", "Title", "Description", "RecipeName",
     }
     if isinstance(value, dict):
         labels = {
@@ -142,17 +142,21 @@ def _log_menu_structure(value: Any, path: str = "root", depth: int = 0) -> None:
             for key, item in value.items()
             if key in label_keys and isinstance(item, (str, int, float))
         }
-        if labels:
-            _LOGGER.debug("LINQ menu structure at %s: labels=%s keys=%s",
-                          path, labels, list(value.keys())[:40])
+        # Log each nested object's keys, even if its labels use an unexpected name.
+        _LOGGER.debug(
+            "LINQ menu structure at %s: keys=%s labels=%s",
+            path,
+            list(value.keys())[:50],
+            labels,
+        )
         for key, child in value.items():
             if isinstance(child, (dict, list)):
                 _log_menu_structure(child, f"{path}.{key}", depth + 1)
     elif isinstance(value, list):
+        _LOGGER.debug("LINQ menu structure at %s: list length=%d", path, len(value))
         for index, child in enumerate(value[:30]):
             if isinstance(child, (dict, list)):
                 _log_menu_structure(child, f"{path}[{index}]", depth + 1)
-
 
 def parse_menu(payload: dict[str, Any], meal_name: str) -> dict[str, list[str]]:
     """Parse LINQ FamilyMenuSessions into {YYYY-MM-DD: [menu items]}."""
