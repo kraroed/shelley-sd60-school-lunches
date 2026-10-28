@@ -187,6 +187,58 @@ def _log_menu_group_summary(value: Any) -> None:
     _LOGGER.debug("LINQ menu group summary: %s", groups)
 
 
+def parse_menu_groups(payload: dict[str, Any], meal_name: str) -> dict[str, dict[str, list[str]]]:
+    """Parse LINQ items into date -> menu group -> recipe names."""
+    result: dict[str, dict[str, list[str]]] = {}
+    sessions = payload.get("FamilyMenuSessions", [])
+
+    for session in sessions:
+        if not isinstance(session, dict):
+            continue
+        session_name = _session_name(session)
+        if session_name and session_name.lower() != meal_name.lower():
+            continue
+
+        for day in _iter_days(session):
+            day_date = _normalize_date(day.get("Date"))
+            if not day_date:
+                continue
+            meals = day.get("MenuMeals", [])
+            if not isinstance(meals, list):
+                continue
+
+            for menu_meal in meals:
+                if not isinstance(menu_meal, dict):
+                    continue
+                raw_name = menu_meal.get("MenuMealName")
+                name = str(raw_name).strip() if raw_name is not None else ""
+                normalized = name.casefold()
+                if normalized == "hot n ready":
+                    group = "Hot n Ready"
+                elif normalized == "grab n go":
+                    group = "Grab N Go"
+                elif normalized == "shared items":
+                    group = "Shared Items"
+                else:
+                    # The main offering has dynamic labels such as "Week 4 Tuesday".
+                    group = "Main Menu"
+
+                items = _collect_recipe_names(menu_meal)
+                if not items:
+                    continue
+                day_groups = result.setdefault(day_date, {})
+                existing = day_groups.setdefault(group, [])
+                existing.extend(item for item in items if item and item not in existing)
+
+    _LOGGER.debug(
+        "Parsed LINQ %s grouped menu: %d days, groups found=%s",
+        meal_name,
+        len(result),
+        sorted({group for groups in result.values() for group in groups}),
+    )
+    return result
+
+
 def parse_menu(payload: dict[str, Any], meal_name: str) -> dict[str, list[str]]:
     """Parse LINQ FamilyMenuSessions into {YYYY-MM-DD: [menu items]}."""
     result: dict[str, list[str]] = {}
