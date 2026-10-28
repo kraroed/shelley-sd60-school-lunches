@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.7 - 2026-10-27
+
+- Add a concise summary of all LINQ menu group names and IDs found in the response, so users do not need to search through individual nested debug lines.
+
 ## 1.4.6 - 2026-10-27
 
 - Log LINQ menu group label fields including null values and value types, to diagnose why menu-group names are missing.
