@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import date, datetime
 import logging
 from typing import Any
 
@@ -73,29 +73,19 @@ def _normalize_date(value: Any) -> str | None:
     if not text:
         return None
 
-    # ISO date/datetime, including values with a trailing Z or timezone.
     iso_candidate = text.replace("Z", "+00:00")
     try:
         return date.fromisoformat(iso_candidate[:10]).isoformat()
     except ValueError:
         pass
 
-    # Common LINQ display/API formats.
     for fmt in ("%m/%d/%Y", "%m-%d-%Y", "%m/%d/%y", "%m-%d-%y"):
         try:
-            return date.strptime(text, fmt).isoformat()
+            return datetime.strptime(text, fmt).date().isoformat()
         except ValueError:
             continue
 
     return None
-
-
-def _recipe_names(category: dict[str, Any]) -> list[str]:
-    return [
-        str(recipe.get("RecipeName", "")).strip()
-        for recipe in category.get("Recipes", [])
-        if recipe.get("RecipeName")
-    ]
 
 
 def _collect_recipe_names(value: Any) -> list[str]:
@@ -136,12 +126,7 @@ def _iter_days(value: Any):
 
 
 def parse_menu(payload: dict[str, Any], meal_name: str) -> dict[str, list[str]]:
-    """Parse LINQ FamilyMenuSessions into {YYYY-MM-DD: [menu items]}.
-
-    LINQ has returned slightly different nesting/field names over time.  We
-    therefore locate menu days recursively and collect RecipeName values below
-    each day rather than depending on one exact nesting structure.
-    """
+    """Parse LINQ FamilyMenuSessions into {YYYY-MM-DD: [menu items]}."""
     result: dict[str, list[str]] = {}
     sessions = payload.get("FamilyMenuSessions", [])
     matched_sessions = 0
@@ -161,7 +146,6 @@ def parse_menu(payload: dict[str, Any], meal_name: str) -> dict[str, list[str]]:
                 continue
 
             items = _collect_recipe_names(day)
-            # Preserve API order while removing duplicates and empty strings.
             result[day_date] = list(dict.fromkeys(item for item in items if item))
 
     _LOGGER.debug(
