@@ -217,7 +217,9 @@ def parse_menu_groups(payload: dict[str, Any], meal_name: str) -> dict[str, dict
                     group = "Hot n Ready"
                 elif normalized == "grab n go":
                     group = "Grab N Go"
-                elif normalized == "second line":
+                elif normalized in {"second line", "2nd line"}:
+                    # LINQ labels Hobbs Middle School's alternate lunch line
+                    # as "2nd Line" on its public menu.
                     group = "Second Line"
                 elif normalized == "shared items":
                     group = "Shared Items"
