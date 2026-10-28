@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.0 - 2026-10-27
+
+- Recognize LINQ's "2nd Line" label as the Hobbs Middle School "Second Line" sensor group.
+
 ## 1.4.9 - 2026-10-27
 
 - Add separate Hobbs Middle School lunch sensors for Main Menu, Second Line, and Shared Items.
