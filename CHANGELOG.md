@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.3 - 2026-10-27
+
+- Prevented long lunch lists from exceeding Home Assistant's 255-character state limit; the Today and Tomorrow sensors now show an item count while keeping the complete menu in attributes.
+- Use Home Assistant's configured timezone for menu date selection and date attributes.
+
 ## 1.4.2 - 2026-10-27
 
 - Fixed LINQ menu parsing for alternate/nested response structures.
