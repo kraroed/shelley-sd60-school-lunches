@@ -217,10 +217,12 @@ def parse_menu_groups(payload: dict[str, Any], meal_name: str) -> dict[str, dict
                     group = "Hot n Ready"
                 elif normalized == "grab n go":
                     group = "Grab N Go"
+                elif normalized == "second line":
+                    group = "Second Line"
                 elif normalized == "shared items":
                     group = "Shared Items"
                 else:
-                    # The main offering has dynamic labels such as "Week 4 Tuesday".
+                    # Main offerings have dynamic labels such as "Week 4 Tuesday".
                     group = "Main Menu"
 
                 items = _collect_recipe_names(menu_meal)
