@@ -24,6 +24,7 @@ The integration uses the district's public LINQ Connect menu API. No LINQ accoun
 - Calendar entity for every school
 - Full menu data in entity attributes
 - Separate Shelley High School lunch group sensors for Main Menu, Hot n Ready, Grab N Go, and Shared Items
+- Separate Hobbs Middle School lunch group sensors for Main Menu, Second Line, and Shared Items
 - Automatic polling with a configurable interval
 - Separate Home Assistant device for each school
 - HACS-compatible repository layout
