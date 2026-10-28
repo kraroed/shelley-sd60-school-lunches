@@ -159,7 +159,12 @@ class ShelleySD60LunchCard extends HTMLElement {
           return;
         }
         foundGroup = true;
-        const groupItems = this._items(groupState.attributes?.menu);
+        const groupMenu = groupState.attributes?.menu;
+        const menuDate = dateEntity?.attributes?.date;
+        const groupValue = groupMenu && !Array.isArray(groupMenu) && typeof groupMenu === "object"
+          ? (groupMenu[menuDate] || groupMenu[Object.keys(groupMenu).sort()[0]] || [])
+          : groupMenu;
+        const groupItems = this._items(groupValue);
         body.append(this._itemsSection(group.label, group.icon, groupItems, groupState.state));
       });
       if (!foundGroup) body.append(this._empty("Menu unavailable", "No menu-group sensors were found."));
