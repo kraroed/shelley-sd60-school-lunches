@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.2 - 2026-10-27
+
+- Fixed LINQ menu parsing for alternate/nested response structures.
+- Added normalization for common LINQ date formats.
+- Added debug logging for matched serving sessions and parsed menu days.
+- Preserved existing configuration entry and entity IDs.
+
 ## 1.4.1 - 2026-10-26
 
 - Added browser-like request headers for LINQ Connect, which may block requests without them.
