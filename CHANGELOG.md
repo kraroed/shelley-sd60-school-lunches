@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.9 - 2026-10-27
+
+- Add separate Hobbs Middle School lunch sensors for Main Menu, Second Line, and Shared Items.
+
 ## 1.4.8 - 2026-10-27
 
 - Separate Shelley High School lunch into Main Menu, Hot n Ready, Grab N Go, and Shared Items sensors while preserving existing combined-menu sensors.
