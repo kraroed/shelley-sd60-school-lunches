@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.4 - 2026-10-27
+
+- Added targeted debug logging for LINQ menu-group labels and object keys to help identify main, alternate, and shared menu sections without logging the full API payload.
+
 ## 1.4.3 - 2026-10-27
 
 - Prevented long lunch lists from exceeding Home Assistant's 255-character state limit; the Today and Tomorrow sensors now show an item count while keeping the complete menu in attributes.
