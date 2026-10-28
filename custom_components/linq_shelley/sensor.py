@@ -24,6 +24,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
             LinqMenuSensor(coordinator, school_id, school["name"]),
             LinqNext14Sensor(coordinator, school_id, school["name"]),
         ])
+        if school_id == "shelley_high" and coordinator.meal.lower() == "lunch":
+            entities.extend(
+                LinqMenuGroupSensor(coordinator, school_id, school["name"], group)
+                for group in ("Main Menu", "Hot n Ready", "Grab N Go", "Shared Items")
+            )
     async_add_entities(entities)
 
 
@@ -130,3 +135,37 @@ class LinqNext14Sensor(BaseLinqSensor):
         a = super().extra_state_attributes
         a["menu"] = self.coordinator.data or {}
         return a
+
+
+class LinqMenuGroupSensor(BaseLinqSensor):
+    """Expose one Shelley High School lunch menu group."""
+
+    def __init__(self, coordinator, school_id, school_name, group_name):
+        super().__init__(coordinator, school_id, school_name)
+        self.group_name = group_name
+        slug = group_name.lower().replace(" ", "_").replace("'", "")
+        self._attr_name = f"{school_name} Lunch {group_name}"
+        self._attr_unique_id = f"{school_id}_lunch_group_{slug}"
+        self._attr_icon = "mdi:food"
+
+    def _group_items(self, offset: int = 0) -> list[str]:
+        key = (dt_util.now().date() + timedelta(days=offset)).isoformat()
+        return (self.coordinator.menu_groups or {}).get(key, {}).get(self.group_name, [])
+
+    @property
+    def native_value(self):
+        items = self._group_items()
+        return f"{len(items)} items" if items else "No menu"
+
+    @property
+    def extra_state_attributes(self):
+        attrs = super().extra_state_attributes
+        attrs.update({
+            "menu_group": self.group_name,
+            "date": dt_util.now().date().isoformat(),
+            "menu": {
+                day: groups.get(self.group_name, [])
+                for day, groups in (self.coordinator.menu_groups or {}).items()
+            },
+        })
+        return attrs
