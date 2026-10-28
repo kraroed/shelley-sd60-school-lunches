@@ -3,7 +3,6 @@ from __future__ import annotations
 import voluptuous as vol
 
 from homeassistant import config_entries
-from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.const import CONF_SCAN_INTERVAL
 
 from .const import (
@@ -22,7 +21,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(
         self, user_input: dict | None = None
-    ) -> ConfigFlowResult:
+    ):
         """Handle the user setup flow."""
 
         if user_input is not None:
