@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import timedelta
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN, SCHOOLS
 from .coordinator import LinqCoordinator
@@ -51,7 +52,7 @@ class BaseLinqSensor(CoordinatorEntity[LinqCoordinator], SensorEntity):
         }
 
     def _items(self, offset: int = 0) -> list[str]:
-        key = (date.today() + timedelta(days=offset)).isoformat()
+        key = (dt_util.now().date() + timedelta(days=offset)).isoformat()
         return (self.coordinator.data or {}).get(key, [])
 
 
@@ -65,12 +66,14 @@ class LinqTodaySensor(BaseLinqSensor):
     @property
     def native_value(self):
         items = self._items(self._offset)
-        return ", ".join(items) if items else "No menu"
+        # Home Assistant states are limited to 255 characters. Keep the full
+        # menu in attributes and expose a short, reliable state value instead.
+        return f"{len(items)} items" if items else "No menu"
 
     @property
     def extra_state_attributes(self):
         a = super().extra_state_attributes
-        a.update({"date": date.today().isoformat(), "menu": self._items()})
+        a.update({"date": dt_util.now().date().isoformat(), "menu": self._items()})
         return a
 
 
@@ -84,12 +87,12 @@ class LinqTomorrowSensor(BaseLinqSensor):
     @property
     def native_value(self):
         items = self._items(self._offset)
-        return ", ".join(items) if items else "No menu"
+        return f"{len(items)} items" if items else "No menu"
 
     @property
     def extra_state_attributes(self):
         a = super().extra_state_attributes
-        key = (date.today() + timedelta(days=1)).isoformat()
+        key = (dt_util.now().date() + timedelta(days=1)).isoformat()
         a.update({"date": key, "menu": self._items(1)})
         return a
 
