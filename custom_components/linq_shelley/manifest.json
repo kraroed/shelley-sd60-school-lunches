@@ -1,7 +1,7 @@
 {
   "domain": "linq_shelley",
   "name": "Shelley SD60 School Lunches",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "documentation": "https://github.com/kraroed/shelley-sd60-school-lunches",
   "issue_tracker": "https://github.com/kraroed/shelley-sd60-school-lunches/issues",
   "codeowners": [
