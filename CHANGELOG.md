@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.8 - 2026-10-27
+
+- Separate Shelley High School lunch into Main Menu, Hot n Ready, Grab N Go, and Shared Items sensors while preserving existing combined-menu sensors.
+
 ## 1.4.7 - 2026-10-27
 
 - Add a concise summary of all LINQ menu group names and IDs found in the response, so users do not need to search through individual nested debug lines.
