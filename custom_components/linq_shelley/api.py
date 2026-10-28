@@ -125,11 +125,44 @@ def _iter_days(value: Any):
             yield from _iter_days(child)
 
 
+
+def _log_menu_structure(value: Any, path: str = "root", depth: int = 0) -> None:
+    """Log menu-group labels and object keys to help diagnose LINQ menu layouts."""
+    if depth > 8:
+        return
+
+    label_keys = {
+        "Name", "MenuName", "MenuType", "MenuTitle", "CategoryName",
+        "RecipeCategoryName", "ServingSession", "SessionName", "MealName",
+        "GroupName", "Label", "Title", "Description",
+    }
+    if isinstance(value, dict):
+        labels = {
+            key: str(item)[:100]
+            for key, item in value.items()
+            if key in label_keys and isinstance(item, (str, int, float))
+        }
+        if labels:
+            _LOGGER.debug("LINQ menu structure at %s: labels=%s keys=%s",
+                          path, labels, list(value.keys())[:40])
+        for key, child in value.items():
+            if isinstance(child, (dict, list)):
+                _log_menu_structure(child, f"{path}.{key}", depth + 1)
+    elif isinstance(value, list):
+        for index, child in enumerate(value[:30]):
+            if isinstance(child, (dict, list)):
+                _log_menu_structure(child, f"{path}[{index}]", depth + 1)
+
+
 def parse_menu(payload: dict[str, Any], meal_name: str) -> dict[str, list[str]]:
     """Parse LINQ FamilyMenuSessions into {YYYY-MM-DD: [menu items]}."""
     result: dict[str, list[str]] = {}
     sessions = payload.get("FamilyMenuSessions", [])
     matched_sessions = 0
+
+    # Diagnostic output is intentionally limited to the LINQ menu's labels and
+    # object keys; it does not dump the complete API payload.
+    _log_menu_structure(sessions)
 
     for session in sessions:
         if not isinstance(session, dict):
