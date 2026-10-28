@@ -24,10 +24,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
             LinqMenuSensor(coordinator, school_id, school["name"]),
             LinqNext14Sensor(coordinator, school_id, school["name"]),
         ])
-        if school_id == "shelley_high" and coordinator.meal.lower() == "lunch":
+        if coordinator.meal.lower() == "lunch":
+            if school_id == "shelley_high":
+                groups = ("Main Menu", "Hot n Ready", "Grab N Go", "Shared Items")
+            elif school_id == "hobbs_middle":
+                groups = ("Main Menu", "Second Line", "Shared Items")
+            else:
+                groups = ()
             entities.extend(
                 LinqMenuGroupSensor(coordinator, school_id, school["name"], group)
-                for group in ("Main Menu", "Hot n Ready", "Grab N Go", "Shared Items")
+                for group in groups
             )
     async_add_entities(entities)
 
@@ -138,7 +144,7 @@ class LinqNext14Sensor(BaseLinqSensor):
 
 
 class LinqMenuGroupSensor(BaseLinqSensor):
-    """Expose one Shelley High School lunch menu group."""
+    """Expose one school's lunch menu group."""
 
     def __init__(self, coordinator, school_id, school_name, group_name):
         super().__init__(coordinator, school_id, school_name)
