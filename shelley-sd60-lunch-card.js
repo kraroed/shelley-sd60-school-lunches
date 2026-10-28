@@ -162,7 +162,7 @@ class ShelleySD60LunchCard extends HTMLElement {
         const groupMenu = groupState.attributes?.menu;
         const menuDate = dateEntity?.attributes?.date;
         const groupValue = groupMenu && !Array.isArray(groupMenu) && typeof groupMenu === "object"
-          ? (groupMenu[menuDate] || groupMenu[Object.keys(groupMenu).sort()[0]] || [])
+          ? (groupMenu[menuDate] || [])
           : groupMenu;
         const groupItems = this._items(groupValue);
         body.append(this._itemsSection(group.label, group.icon, groupItems, groupState.state));
