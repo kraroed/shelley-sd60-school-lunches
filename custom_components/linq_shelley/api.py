@@ -138,10 +138,12 @@ def _log_menu_structure(value: Any, path: str = "root", depth: int = 0) -> None:
         "GroupName", "Label", "Title", "Description", "RecipeName",
     }
     if isinstance(value, dict):
+        # Include null/empty values and their types: LINQ may return the
+        # group-name fields with unexpected types or without populated values.
         labels = {
-            key: str(item)[:100]
+            key: {"value": repr(item)[:100], "type": type(item).__name__}
             for key, item in value.items()
-            if key in label_keys and isinstance(item, (str, int, float))
+            if key in label_keys
         }
         # Log each nested object's keys, even if its labels use an unexpected name.
         _LOGGER.debug(
