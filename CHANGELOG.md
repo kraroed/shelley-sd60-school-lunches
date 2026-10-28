@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.6 - 2026-10-27
+
+- Log LINQ menu group label fields including null values and value types, to diagnose why menu-group names are missing.
+
 ## 1.4.5 - 2026-10-27
 
 - Expanded LINQ menu diagnostics to log nested object keys and list lengths even when group labels use unexpected field names.
