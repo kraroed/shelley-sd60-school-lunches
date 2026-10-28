@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import timedelta
 import logging
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import dt as dt_util
 
 from .api import LinqClient, LinqError, parse_menu
 
@@ -24,7 +25,8 @@ class LinqCoordinator(DataUpdateCoordinator[dict[str, list[str]]]):
         )
 
     async def _async_update_data(self) -> dict[str, list[str]]:
-        today = date.today()
+        # Use Home Assistant's configured timezone rather than the host OS date.
+        today = dt_util.now().date()
         try:
             payload = await self.client.async_get_menu(today, today + timedelta(days=13))
             return parse_menu(payload, self.meal)
