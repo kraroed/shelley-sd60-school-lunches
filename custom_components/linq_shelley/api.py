@@ -161,6 +161,32 @@ def _log_menu_structure(value: Any, path: str = "root", depth: int = 0) -> None:
             if isinstance(child, (dict, list)):
                 _log_menu_structure(child, f"{path}[{index}]", depth + 1)
 
+def _log_menu_group_summary(value: Any) -> None:
+    """Log a concise inventory of every menu-group label found in the response."""
+    groups: dict[str, dict[str, Any]] = {}
+
+    def walk(item: Any, path: str = "root") -> None:
+        if isinstance(item, dict):
+            if "MenuMealName" in item or "MenuMealId" in item:
+                name = item.get("MenuMealName")
+                group_name = str(name).strip() if name is not None and str(name).strip() else "(blank MenuMealName)"
+                groups.setdefault(group_name, {
+                    "MenuMealId": item.get("MenuMealId"),
+                    "MenuPlanName": item.get("MenuPlanName"),
+                    "example_path": path,
+                })
+            for key, child in item.items():
+                if isinstance(child, (dict, list)):
+                    walk(child, f"{path}.{key}")
+        elif isinstance(item, list):
+            for index, child in enumerate(item):
+                if isinstance(child, (dict, list)):
+                    walk(child, f"{path}[{index}]")
+
+    walk(value)
+    _LOGGER.debug("LINQ menu group summary: %s", groups)
+
+
 def parse_menu(payload: dict[str, Any], meal_name: str) -> dict[str, list[str]]:
     """Parse LINQ FamilyMenuSessions into {YYYY-MM-DD: [menu items]}."""
     result: dict[str, list[str]] = {}
@@ -170,6 +196,7 @@ def parse_menu(payload: dict[str, Any], meal_name: str) -> dict[str, list[str]]:
     # Diagnostic output is intentionally limited to the LINQ menu's labels and
     # object keys; it does not dump the complete API payload.
     _log_menu_structure(sessions)
+    _log_menu_group_summary(sessions)
 
     for session in sessions:
         if not isinstance(session, dict):
