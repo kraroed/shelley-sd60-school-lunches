@@ -132,7 +132,8 @@ def _log_menu_structure(value: Any, path: str = "root", depth: int = 0) -> None:
         return
 
     label_keys = {
-        "Name", "MenuName", "MenuType", "MenuTitle", "CategoryName",
+        "Name", "MenuName", "MenuType", "MenuTitle", "MenuPlanName",
+        "MenuMealName", "MenuPlanId", "MenuMealId", "CategoryName",
         "RecipeCategoryName", "ServingSession", "SessionName", "MealName",
         "GroupName", "Label", "Title", "Description", "RecipeName",
     }
