@@ -60,6 +60,11 @@ class LinqClient:
                         "LINQ response did not contain FamilyMenuSessions; "
                         "the API response format may have changed or the request was blocked"
                     )
+                if not isinstance(payload["FamilyMenuSessions"], list):
+                    raise LinqError(
+                        "LINQ response FamilyMenuSessions must be a list; "
+                        "the API response format may have changed"
+                    )
                 return payload
         except (aiohttp.ClientError, TimeoutError) as err:
             raise LinqError(f"Could not connect to LINQ Connect: {err}") from err

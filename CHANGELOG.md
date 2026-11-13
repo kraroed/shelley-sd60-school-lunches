@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.5.3 - 2026-11-12
+
+- Validate the LINQ FamilyMenuSessions response before parsing it, with clearer handling of unexpected response shapes.
+- Add regression tests for date parsing, meal filtering, menu-group normalization, all six school identifiers, API request behavior, and API failure cases.
+- Add calendar entity regression tests for event dates and metadata.
+- Run Python compilation, pytest, and HACS validation in separate GitHub Actions jobs.
+- Correct README documentation for sensor states, attributes, and CI checks.
+
 ## 1.5.0 - 2026-10-27
 
 - Recognize LINQ's "2nd Line" label as the Hobbs Middle School "Second Line" sensor group.

@@ -80,36 +80,43 @@ Entity IDs can vary slightly depending on existing entities and Home Assistant's
 
 A more complete dashboard example is included in [`examples/lunch-dashboard.yaml`](examples/lunch-dashboard.yaml).
 
-## Sensors
+## Sensors and attributes
 
 Each school receives:
 
-- `<School> <Meal> Today` – comma-separated menu items for today
-- `<School> <Meal> Tomorrow` – comma-separated menu items for tomorrow
-- `<School> <Meal> Menu` – number of days returned, with the full menu in attributes
-- `<School> <Meal> 14 Day Menu` – number of days returned, with the full menu in attributes
-- `<School> <Meal> Calendar` – calendar events for days with menu items
+- `<School> <Meal> Today` – item count (or `No menu`), with the complete list in the `menu` attribute
+- `<School> <Meal> Tomorrow` – item count (or `No menu`), with the complete list in the `menu` attribute
+- `<School> <Meal> Menu` – number of days returned, with the full date-to-items mapping in `menu`
+- `<School> <Meal> 14 Day Menu` – number of days returned, with the full date-to-items mapping in `menu`
+- `<School> <Meal> Calendar` – all-day calendar events for days with menu items
 
-The daily sensors also expose the menu as a `menu` attribute. The menu sensors expose a date-to-items mapping under `menu`.
+The Shelley High and Hobbs Middle lunch group sensors also expose date-to-items mappings for their respective menu groups. Daily sensors use Home Assistant's configured timezone when determining the menu date.
 
 ## LINQ configuration
 
 The integration is preconfigured for Shelley School District 60:
 
 - District ID: `bff2ebbd-7278-eb11-a2d4-c8076e69fc1e`
-- Six LINQ building IDs are stored in `const.py`.
+- Six LINQ building IDs are stored in `custom_components/linq_shelley/const.py`.
 
 These identifiers are public menu identifiers, not credentials.
 
-## Development
+## Development and automated validation
 
-Create a Home Assistant development environment, then run the tests with:
+The repository's GitHub Actions workflow runs two independent jobs on pushes and pull requests targeting `main`:
+
+1. **Python compile and tests** – installs Home Assistant and the test tools, compiles the integration, and runs the complete pytest suite.
+2. **HACS validation** – checks the repository using the HACS validation action.
+
+Run the same Python checks locally in a Home Assistant-compatible Python environment:
 
 ```bash
-pytest -q
+python -m pip install homeassistant pytest pytest-asyncio
+python -m compileall -q custom_components/linq_shelley
+python -m pytest -q
 ```
 
-The GitHub Actions workflow also compiles the integration Python modules and runs the parser tests.
+The tests cover all six district building IDs, LINQ date normalization, breakfast/lunch filtering, menu de-duplication, known menu-group labels, API request parameters, malformed responses, HTTP errors, and connection failures.
 
 ## License
 
