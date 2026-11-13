@@ -11,7 +11,7 @@ from custom_components.linq_shelley.calendar import LinqMenuCalendar
 @pytest.mark.asyncio
 async def test_calendar_returns_all_day_events_only_for_days_with_menu():
     calendar = object.__new__(LinqMenuCalendar)
-    calendar._coordinator = SimpleNamespace(
+    calendar.coordinator = SimpleNamespace(
         data={
             "2026-10-26": ["Pizza", "Fruit"],
             "2026-10-28": [],
@@ -39,7 +39,7 @@ async def test_calendar_returns_all_day_events_only_for_days_with_menu():
 @pytest.mark.asyncio
 async def test_calendar_respects_exclusive_end_date():
     calendar = object.__new__(LinqMenuCalendar)
-    calendar._coordinator = SimpleNamespace(
+    calendar.coordinator = SimpleNamespace(
         data={"2026-10-26": ["Pizza"], "2026-10-27": ["Tacos"]},
         school_name="Hobbs Middle School",
         meal="Lunch",
